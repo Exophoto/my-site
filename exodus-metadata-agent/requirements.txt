@@ -1,0 +1,4 @@
+anthropic
+pillow
+python-dotenv
+pyexiftool
