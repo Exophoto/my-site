@@ -24,7 +24,10 @@ LOG_DIR = Path(__file__).parent / "logs"
 CSV_COLUMNS = [
     "filename",
     "filepath",
-    "title",
+    "title_1",
+    "title_2",
+    "title_3",
+    "title_embedded",
     "description",
     "keywords",
     "alt_text",
@@ -126,11 +129,17 @@ def process_file(client, filepath: Path, keep_backups: bool) -> dict:
 
     try:
         metadata = analyze_image(client, filepath)
-        row["title"] = metadata.get("title", "")
+        row["title_1"] = metadata.get("title_1", "")
+        row["title_2"] = metadata.get("title_2", "")
+        row["title_3"] = metadata.get("title_3", "")
         row["description"] = metadata.get("description", "")
         row["keywords"] = ", ".join(metadata.get("keywords", []))
         row["alt_text"] = metadata.get("alt_text", "")
         row["category"] = metadata.get("category", "")
+
+        # title_1 is embedded into the file; review CSV to pick your preferred title
+        metadata["title"] = metadata.get("title_1", "")
+        row["title_embedded"] = metadata["title"]
 
         embedder.embed_metadata(filepath, metadata, keep_backup=keep_backups)
 

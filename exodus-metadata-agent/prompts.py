@@ -33,7 +33,9 @@ Respond with ONLY a valid JSON object (no markdown fences, no commentary) with t
 exact keys:
 
 {{
-  "title": "60-70 character artistic title",
+  "title_1": "60-70 character artistic title — option 1",
+  "title_2": "60-70 character artistic title — option 2, different angle or mood",
+  "title_3": "60-70 character artistic title — option 3, another distinct approach",
   "description": "450-600 character description",
   "keywords": ["10-15", "keywords", "as", "an", "array"],
   "alt_text": "100-125 character accessibility alt text",
@@ -41,7 +43,9 @@ exact keys:
 }}
 
 Constraints:
-- title: 60-70 characters, evocative and gallery-appropriate.
+- title_1, title_2, title_3: each 60-70 characters, evocative and gallery-appropriate.
+  Make each option distinct — vary the angle, mood, or emphasis so they offer a real
+  choice. One might be more poetic, one more descriptive, one more commercial.
 - description: 450-600 characters, descriptive and suited to a print/licensing listing.
 - keywords: 10-15 single words or short phrases, lowercase, no duplicates.
 - alt_text: 100-125 characters, plain factual description for screen readers.
