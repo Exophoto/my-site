@@ -91,7 +91,7 @@ def analyze_image(client, filepath: Path) -> dict:
 
     response = client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=1024,
+        max_tokens=1536,
         system=VISION_SYSTEM_PROMPT,
         messages=[
             {

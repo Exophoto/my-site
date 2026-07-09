@@ -47,7 +47,21 @@ Constraints:
   Make each option distinct — vary the angle, mood, or emphasis so they offer a real
   choice. One might be more poetic, one more descriptive, one more commercial.
 - description: 450-600 characters, descriptive and suited to a print/licensing listing.
-- keywords: 10-15 single words or short phrases, lowercase, no duplicates.
+  Naturally mention 1-2 specific commercial environments where the image would work
+  (e.g. "hospital corridor", "hotel lobby", "executive boardroom", "restaurant wall").
+- keywords: 15-20 single words or short phrases, lowercase, no duplicates.
+  Include a strong mix from ALL of these niche categories:
+  * Subject/content: what is literally in the image
+  * Commercial licensing: e.g. "hospital art licensing", "hotel wall art", "corporate
+    office decor", "healthcare interior design", "restaurant wall decor",
+    "waiting room art", "medical facility art"
+  * Print format: e.g. "large format print", "canvas wall art", "fine art print",
+    "gallery wrap", "metal print", "framed wall art"
+  * Style/mood: e.g. "minimalist", "calming", "dramatic", "moody", "uplifting"
+  * Oklahoma/regional if relevant: e.g. "oklahoma photographer", "midwest landscape",
+    "southern plains photography"
+  * Buyer type: e.g. "interior designer art", "art consultant", "hospitality decor
+    buyer", "healthcare art program"
 - alt_text: 100-125 characters, plain factual description for screen readers.
 - category: must be exactly one of the category slugs listed above.
 """
