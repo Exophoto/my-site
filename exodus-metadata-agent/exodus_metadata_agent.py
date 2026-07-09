@@ -8,12 +8,14 @@ embeds it directly into each file's IPTC/XMP headers, and logs the results to CS
 import argparse
 import base64
 import csv
+import io
 import json
 import sys
 from datetime import date
 from pathlib import Path
 
 from dotenv import load_dotenv
+from PIL import Image
 
 import embedder
 from prompts import VISION_SYSTEM_PROMPT
@@ -84,8 +86,33 @@ def append_log_row(log_path: Path, row: dict, write_header: bool) -> None:
         writer.writerow(row)
 
 
+MAX_API_BYTES = 9 * 1024 * 1024  # 9MB — safely under Claude's 10MB limit
+
+
+def prepare_image_bytes(filepath: Path) -> bytes:
+    """Return image bytes ready for the API, resizing in memory if over the limit."""
+    raw = filepath.read_bytes()
+    if len(raw) <= MAX_API_BYTES:
+        return raw
+
+    img = Image.open(filepath)
+    quality = 85
+    scale = 0.9
+    while True:
+        buf = io.BytesIO()
+        width = int(img.width * scale)
+        height = int(img.height * scale)
+        resized = img.resize((width, height), Image.LANCZOS)
+        resized.save(buf, format="JPEG", quality=quality)
+        data = buf.getvalue()
+        if len(data) <= MAX_API_BYTES:
+            return data
+        scale *= 0.85
+        quality = max(quality - 5, 60)
+
+
 def analyze_image(client, filepath: Path) -> dict:
-    image_bytes = filepath.read_bytes()
+    image_bytes = prepare_image_bytes(filepath)
     media_type = "image/jpeg"
     b64_data = base64.standard_b64encode(image_bytes).decode("utf-8")
 
