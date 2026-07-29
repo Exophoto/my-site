@@ -16,18 +16,7 @@ echo ""
 read -p "Type the log filename (e.g. exodus_metadata_log_20260729.csv): " LOGFILE
 echo ""
 
-echo "Options:"
-echo "  1. Embed title only"
-echo "  2. Embed title AND rename files to match title"
-echo ""
-read -p "Type 1 or 2: " CHOICE
-echo ""
-
-if [ "$CHOICE" = "2" ]; then
-    python3 "$SCRIPT_DIR/re-embed-title.py" --csv "$LOG_DIR/$LOGFILE" --rename
-else
-    python3 "$SCRIPT_DIR/re-embed-title.py" --csv "$LOG_DIR/$LOGFILE"
-fi
+python3 "$SCRIPT_DIR/re-embed-title.py" --csv "$LOG_DIR/$LOGFILE" --rename
 
 echo ""
 read -p "Press Return to close..."
