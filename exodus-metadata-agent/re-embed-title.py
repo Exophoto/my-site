@@ -12,6 +12,10 @@ Workflow:
 
   Optional: add --dry-run to preview all changes without writing anything.
        python3 re-embed-title.py --csv logs/exodus_metadata_log_20260709.csv --rename --dry-run
+
+The CSV log is updated in place with two new columns:
+  chosen_title  — the title that was embedded
+  final_filename — the filename after renaming (or original if not renamed)
 """
 
 import argparse
@@ -60,18 +64,13 @@ def find_chosen_title(row: dict) -> str:
 def title_to_filename(title: str) -> str:
     """Convert a title string to a clean dash-separated filename.
 
-    'Ascent — Symmetry in Steel and Glass' →
+    'Ascent — Symmetry in Steel and Glass' ->
     'Ascent-Symmetry-in-Steel-and-Glass.jpg'
     """
-    # Replace em-dashes, en-dashes, colons, and other punctuation with a space
     cleaned = re.sub(r"[—–\/:*?\"<>|]", " ", title)
-    # Replace any remaining non-alphanumeric characters (except spaces) with nothing
     cleaned = re.sub(r"[^\w\s]", "", cleaned)
-    # Collapse multiple spaces, strip edges
     cleaned = " ".join(cleaned.split())
-    # Replace spaces with dashes
-    dashed = cleaned.replace(" ", "-")
-    return dashed + ".jpg"
+    return cleaned.replace(" ", "-") + ".jpg"
 
 
 def embed_title(filepath: Path, title: str, dry_run: bool) -> str:
@@ -103,15 +102,21 @@ def rename_file(filepath: Path, new_name: str, dry_run: bool) -> tuple[Path, str
 
     if new_path == filepath:
         return filepath, "unchanged"
-
     if new_path.exists():
-        return filepath, f"Skipped rename — file already exists: {new_name}"
-
+        return filepath, f"Skipped — file already exists: {new_name}"
     if dry_run:
         return new_path, "dry-run"
 
     filepath.rename(new_path)
     return new_path, "renamed"
+
+
+def update_csv(csv_path: Path, updated_rows: list[dict], fieldnames: list[str]) -> None:
+    """Write the updated rows back to the CSV file."""
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(updated_rows)
 
 
 def main():
@@ -123,11 +128,19 @@ def main():
         sys.exit(1)
 
     with open(csv_path, newline="", encoding="utf-8") as f:
-        rows = list(csv.DictReader(f))
+        reader = csv.DictReader(f)
+        original_fieldnames = reader.fieldnames or []
+        rows = list(reader)
 
     if not rows:
         print("No rows found in CSV.")
         return
+
+    # Add new columns if not already present
+    fieldnames = list(original_fieldnames)
+    for col in ["chosen_title", "final_filename"]:
+        if col not in fieldnames:
+            fieldnames.append(col)
 
     eligible = [r for r in rows if r.get("embed_status") == "success"]
     if not eligible:
@@ -141,7 +154,14 @@ def main():
     success_count = 0
     error_count = 0
 
-    for row in eligible:
+    for row in rows:
+        # Ensure new columns exist in every row
+        row.setdefault("chosen_title", "")
+        row.setdefault("final_filename", "")
+
+        if row.get("embed_status") != "success":
+            continue
+
         filepath = Path(row["filepath"])
         title = find_chosen_title(row)
 
@@ -161,8 +181,15 @@ def main():
         new_filename = title_to_filename(title)
         if args.rename:
             filepath, rename_status = rename_file(filepath, new_filename, dry_run=args.dry_run)
+            final_filename = new_filename
         else:
             rename_status = "not requested"
+            final_filename = row["filename"]
+
+        # Update row with chosen title and final filename
+        if not args.dry_run:
+            row["chosen_title"] = title
+            row["final_filename"] = final_filename
 
         # Report
         if args.dry_run:
@@ -179,8 +206,11 @@ def main():
                 print(f"    Rename: {rename_status}")
             success_count += 1
 
+    # Write updated CSV
     if not args.dry_run:
+        update_csv(csv_path, rows, fieldnames)
         print(f"\nDone. {success_count} updated, {error_count} errors.")
+        print(f"CSV log updated: {csv_path.name}")
 
 
 if __name__ == "__main__":
